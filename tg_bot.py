@@ -1,12 +1,19 @@
-import datetime
-
 import requests
-from config import open_weather_token
-from pprint import pprint
+import datetime
+from config import tg_bot_token, open_weather_token
+from aiogram import Bot, types
+from aiogram.dispatcher import Dispatcher
+from aiogram.utils import executor
 
+bot = Bot(token=tg_bot_token)
+dp = Dispatcher(bot)
 
-def get_weather(city, open_weather_token):
+@dp.message_handler(commands=["start"])
+async def start_command(message: types.Message):
+    await message.reply("Привет! Напиши название города!")
 
+@dp.message_handler()
+async def get_weather(message: types.Message):
     emoji = {
         "Clear": "Ясно \U00002600",
         "Clouds": "Облачно \U00002601",
@@ -22,7 +29,6 @@ def get_weather(city, open_weather_token):
             f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={open_weather_token}&units=metric"
         )
         data = r.json()
-        pprint(data)
 
         city = data["name"]
         cur_weather = data["main"]["temp"]
@@ -50,10 +56,5 @@ def get_weather(city, open_weather_token):
         print("Проверьте название города!")
 
 
-def main():
-    city = input("Введите город: ")
-    get_weather(city, open_weather_token)
-
-
 if __name__ == '__main__':
-    main()
+    executor.start_polling(dp)
